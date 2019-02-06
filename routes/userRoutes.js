@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const cfController = require('../controllers/careerfairController');
+const schoolController = require('../controllers/schoolController')
 const userController = require('../controllers/userController');
 const auth = require('../auth/is-auth');
 
@@ -27,5 +28,8 @@ router.get('/scheduledtalks', auth, userController.getScheduledTalks);
 // add a new talk to scheduled talks
 // POST /scheduledtalks/:talkId
 router.post('/scheduledtalks', auth, userController.addScheduledTalk);
+
+// GET all schools available when creating user accounts, no auth needed
+router.get('/schools', schoolController.getSchools);
 
 module.exports = router;

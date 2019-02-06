@@ -17,7 +17,7 @@ const talkSchema = new Schema({
         required: true,
         ref: 'Company'
     },
-    startDate: { // the start time of the talk
+    startTime: { // the start time of the talk
         type: Date,
         retuired: true
     },
@@ -28,6 +28,11 @@ const talkSchema = new Schema({
     scheduledBy: { // who appointed the talk, null if not appointed
         type: Schema.Types.ObjectId,
         ref: 'User'
+    },
+    scheduled: {
+        type: boolean,
+        required: true,
+        default: false
     }
 });
 

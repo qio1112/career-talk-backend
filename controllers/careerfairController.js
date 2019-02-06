@@ -16,15 +16,16 @@ exports.getCareerfairs = (req, res, next) => {
                 throw err;
             }
             this.schoolId = user.school;
-            return School.findById(schoolId);
+            return School.findById(this.schoolId).populate('careerfairs');
         })
         .then(school => {
+            console.log(school);
             if(!school) {
                 const err = new Error('School not found');
                 err.statusCode = 404;
                 throw err;
             }
-            return school.populate('careerfairs.careerfair');
+            return school.careerfairs;
         })
         .then(careerfairs => {
             res.status(200).json({

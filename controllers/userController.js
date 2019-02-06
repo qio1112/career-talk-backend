@@ -15,8 +15,8 @@ exports.signup = (req, res, next) => {
             const newUser = new User({
                 email: req.body.email,
                 password: hashedPassword,
-                firstname: req.body.firstname,
-                lastname: req.body.lastname,
+                firstName: req.body.firstname,
+                lastName: req.body.lastname,
                 phone: req.body.phone,
                 school: req.body.school,
                 scheduledTalks: [],
@@ -79,7 +79,6 @@ exports.getUser = (req, res, next) => {
     const userId = req.userId;
     User.findById(userId)
         .populate('school')
-        .execPopulate()
         .then(user => {
             if(!user) {
                 const err = new Error('User not found');
@@ -91,8 +90,8 @@ exports.getUser = (req, res, next) => {
                 user: {
                     userId: user._id,
                     email: user.email,
-                    firstname: user.firstname,
-                    lastname: user.lastname,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
                     phone: user.phone,
                     schoolId: user.school._id,
                     school: user.school.name,
@@ -107,22 +106,22 @@ exports.getUser = (req, res, next) => {
 
 // POST /userinfo/edit
 exports.setUser = (req, res, next) => {
-    const username = req.body.username;
-    const firstname = req.body.firstname;
-    const lastname = req.body.lastname;
+    const userName = req.body.userName;
+    const firstName = req.body.firstName;
+    const lastName = req.body.lastName;
     const birthday = new Date(req.body.birthday); //"1990-01-12"
 
     const userId = req.userId;
-    User.findById(usereId)
+    User.findById(userId)
         .then(user => {
             if(!user) {
                 const err = new Error('User not found');
                 err.statusCode = 401;
                 throw err;
             }
-            user.username = username;
-            user.firstname = firstname;
-            user.lastname = lastname;
+            user.userName = userName;
+            user.firstName = firstName;
+            user.lastName = lastName;
             user.birthday = birthday;
             return user.save();
         })
@@ -142,6 +141,7 @@ exports.getScheduledTalks = (req, res, next) => {
         .populate('talks.talk')
         .execPopulate()
         .then(user => {
+            console.log(user);
             if(!user) {
                 const err = new Error('User not found');
                 err.statusCode = 401;

@@ -1,4 +1,4 @@
-const School = requrie('../models/school');
+const School = require('../models/school');
 const User = require('../models/user');
 const { validationResult } = require('express-validator/check');
 
@@ -53,7 +53,7 @@ exports.getSchoolById = (req, res, next) => {
 // get all schools
 // GET /schools
 exports.getSchools = (req, res, next) => {
-    School.findAll()
+    School.find()
         .then(schools => {
             res.json({
                 message: 'All schools fetched',

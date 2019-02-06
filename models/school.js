@@ -13,10 +13,8 @@ const schoolSchema = new Schema({
         unique: true
     },
     careerfairs: [{
-        careerfair: {
             type: Schema.Types.ObjectId,
             ref: 'Careerfair'
-        }
     }]
 });
 
