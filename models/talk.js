@@ -30,10 +30,14 @@ const talkSchema = new Schema({
         ref: 'User'
     },
     scheduled: {
-        type: boolean,
+        type: Boolean,
         required: true,
         default: false
+    },
+    location: {
+        type: String,
+        requried: true
     }
 });
 
-module.export = mongoose.model('Talk', talkSchema);
+module.exports = mongoose.model('Talk', talkSchema);

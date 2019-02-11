@@ -26,8 +26,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// routes will be added
-app.use(careerfairRoutes, companyRoutes, userRoutes);
+// routes
+app.use(companyRoutes, careerfairRoutes, userRoutes);
 
 // error handling
 app.use((error, req, res, next) => {
@@ -43,10 +43,5 @@ mongoose.connect('mongodb+srv://Yipeng:Universal231!@careertalk-s5pxe.mongodb.ne
     .then(result => {
         const server = app.listen(3000);
         console.log('Database connected!');
-        // socket.io channels
-        // const io = require('./socket').init(server);
-        // io.on('connection', socket => {
-        //     console.log('Client connected!');
-        // });
     })
     .catch(err => console.log(err));

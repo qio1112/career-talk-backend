@@ -1,5 +1,6 @@
 const Company  = require('../models/company');
 const Careerfair = require('../models/careerfair');
+const Talk = require('../models/talk');
 const { validationResult } = require('express-validator/check');
 
 // get all companies in a careerfair
@@ -7,7 +8,7 @@ const { validationResult } = require('express-validator/check');
 exports.getCompanies = (req, res, next) => {
     const careerfairId = req.params.careerfairId;
     Careerfair.findById(careerfairId)
-        .populate('companies.company')
+        .populate('companies')
         .then(careerfair => {
             if(!careerfair) {
                 const err = new Error('No such careerfair found.');
@@ -17,7 +18,8 @@ exports.getCompanies = (req, res, next) => {
             const companies = careerfair.companies;
             res.status(200).json({
                 message: 'Companies found.',
-                companies: companies
+                companies: companies,
+                careerfair: careerfair,
             });
         })
         .catch(err => {
@@ -52,17 +54,17 @@ exports.getTalks = (req, res, next) => {
     const careerfairId = req.params.careerfairId;
     const companyId = req.params.companyId;
     Careerfair.findById(careerfairId)
-        .populate('talks.talk')
-        .execPopulate()
+        .populate('talks')
         .then(careerfair => {
             if(!careerfair) {
                 const err = new Error('Career fair not found');
                 err.statusCode = 404;
                 throw err;
             }
+            const talks = careerfair.talks.filter(talk => talk.company._id.toString() === companyId)
             res.status(200).json({
                 message: 'Talks fetched',
-                talks: careerfair.talks.filter(talk => talk.company._id.toString() === companyId)
+                talks: talks
             });
         })
         .catch(err => {

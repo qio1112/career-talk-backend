@@ -19,7 +19,6 @@ exports.getCareerfairs = (req, res, next) => {
             return School.findById(this.schoolId).populate('careerfairs');
         })
         .then(school => {
-            console.log(school);
             if(!school) {
                 const err = new Error('School not found');
                 err.statusCode = 404;
@@ -59,34 +58,4 @@ exports.getCareerfairById = (req, res, next) => {
         .catch(err => {
             next(err);
         });
-};
-
-// get all talks in a career fair in the order of start time asending
-// GET /careerfair/:careerfairId/talks
-exports.getTalks = (req, res, next) => {
-    const careerfairId = req.params.careerfairId;
-    Careerfair.findById(careerfairId)
-        .populate('talks.talk')
-        .execPopulate()
-        .then(careerfair => {
-            if(!careerfair) {
-                const err = new Error('No such careerfair');
-                err.statusCode = 404;
-                throw err;
-            }
-            const talks = careerfair.talks;
-            res.status(200).json({
-                message: 'Talks fetched',
-                talks: talks
-            });
-        })
-        .catch(err => {
-            next(err);
-        });
-};
-
-// create a new careerfair
-// POST /careerfair
-exports.createCareerfair = (req, res, next) => {
-    //need verify if the user is logged in and is a school.
 };

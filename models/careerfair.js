@@ -33,16 +33,12 @@ const careerfairSchema = new Schema({
         required: true
     },
     talks: [{ // all talks available in the career fair
-        talk: {
-            type: Schema.Types.ObjectId,
-            ref: 'Talk'
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'Talk'
     }],
     companies: [{
-        company: {
-            type: Schema.Types.ObjectId,
-            ref: 'Company'
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'Company'
     }]
 });
 

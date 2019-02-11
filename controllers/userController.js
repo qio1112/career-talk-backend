@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Talk = require('../models/talk');
 const School = require('../models/school');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -18,7 +19,7 @@ exports.signup = (req, res, next) => {
                 firstName: req.body.firstname,
                 lastName: req.body.lastname,
                 phone: req.body.phone,
-                school: req.body.school,
+                school: new mongoose.Types.ObjectId(req.body.schoolId),
                 scheduledTalks: [],
                 type: req.body.type
             });
@@ -156,10 +157,12 @@ exports.getScheduledTalks = (req, res, next) => {
         .catch(err => next(err));
 };
 
-// POST /scheduledtalks/:talkId
+// POST /scheduledtalks
 exports.addScheduledTalk = (req, res, next) => {
-    const userId = req.usuerId;
-    const talkId = req.params.talkId;
+    const userId = req.userId;
+    const talkId = req.body.talkId;
+    let user;
+    let talk;
     User.findById(userId)
         .then(user => {
             if(!user) {
@@ -167,12 +170,63 @@ exports.addScheduledTalk = (req, res, next) => {
                 err.statusCode = 401;
                 throw err;
             }
-            user.talks.push(new mongoose.Types.ObjectId(talkId));
-            return user.save();
+            this.user = user;
+            return Talk.findById(talkId);
+            // user.talks.push(new mongoose.Types.ObjectId(talkId));
+            // return user.save();
+        })
+        .then(talk => {
+            if(!talk) {
+                const err = new Error('Talk nor found');
+                err.statusCode = 401;
+                throw err;
+            }
+            if(talk.scheduled) {
+                const err = new Error('Talk has been scheduled');
+                err.statusCode = 500;
+                throw err;
+            }
+            this.talk = talk;
+            talk.scheduled = true;
+            talk.scheduledBy = new mongoose.Types.ObjectId(this.user._id);
+            return talk.save();
         })
         .then(result => {
-            res.status(201).json({message: 'Talk scheduled', result: result});
+            // if(!this.user.talks.find(t => t._id.toString() === this.talk._id)) {
+            //     this.user.talks.push(new mongoose.Types.ObjectId(this.talk._id));
+            //     return this.user.save();
+            // } 
+            // return ;
+            this.user.talks.push(this.talk);
+            return this.user.save();
+        })
+        .then(result => {
+            res.status(201).json({message: result});
         })
         .catch(err => next(err));
 };
 
+// POST remove an scheduled talk
+exports.removeScheduledTalk = (req, res, next) => {
+    const userId = req.userId;
+    const talkId = req.body.talkId;
+    User.findById(userId)
+        .then(user => {
+            if(!user) {
+                const err = new Error('User nor found');
+                err.statusCode = 401;
+                throw err;
+            }
+            user.talks.pull(talkId);
+            return user.save()
+        })
+        .then(result => {
+            return Talk.findById(talkId);
+        })
+        .then(talk => {
+            talk.scheduled = false;
+            talk.scheduledBy = null;
+            talk.save()
+        })
+        .catch(err => next(err));
+}

@@ -26,8 +26,11 @@ router.post('/userinfo/edit', auth, userController.setUser);
 router.get('/scheduledtalks', auth, userController.getScheduledTalks);
 
 // add a new talk to scheduled talks
-// POST /scheduledtalks/:talkId
-router.post('/scheduledtalks', auth, userController.addScheduledTalk);
+// POST /scheduletalk
+router.post('/scheduletalk', auth, userController.addScheduledTalk);
+
+// unschedule a talk 
+router.post('/unscheduletalk', auth, userController.removeScheduledTalk);
 
 // GET all schools available when creating user accounts, no auth needed
 router.get('/schools', schoolController.getSchools);

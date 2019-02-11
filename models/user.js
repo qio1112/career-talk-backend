@@ -34,10 +34,8 @@ const userSchema = new Schema({
         ref: 'School'
     },
     talks: [{ // talks the user has scheduled
-        talk: {
-            type: Schema.Types.ObjectId,
-            ref: 'Talk'
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'Talk'
     }],
     type: { // type of the user, student or school
         type: String,
