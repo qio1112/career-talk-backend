@@ -8,7 +8,7 @@ const { validationResult } = require('express-validator/check');
 
 const HASH_TIMES = 10; // times of hashing the passwords
 
-// PUT /signup
+// POST /signup
 exports.signup = (req, res, next) => {
     bcrypt.hash(req.body.password, HASH_TIMES)
         .then(hashedPassword => {
@@ -105,31 +105,62 @@ exports.getUser = (req, res, next) => {
         })
 };
 
-// POST /userinfo/edit
-exports.setUser = (req, res, next) => {
-    const userName = req.body.userName;
-    const firstName = req.body.firstName;
-    const lastName = req.body.lastName;
-    const birthday = new Date(req.body.birthday); //"1990-01-12"
+// PATCH /userinfo/edit update user information
+exports.setUser = async (req, res, next) => {
+    const newFirstName = req.body.firstName;
+    const newLastName = req.body.lastName;
+    const newPhone = req.body.phone;
+    const newSchoolId = req.body.schoolId;
 
+    let user = null;
     const userId = req.userId;
     User.findById(userId)
         .then(user => {
+            this.user = user;
             if(!user) {
                 const err = new Error('User not found');
                 err.statusCode = 401;
                 throw err;
             }
-            user.userName = userName;
-            user.firstName = firstName;
-            user.lastName = lastName;
-            user.birthday = birthday;
-            return user.save();
+            this.user.firstName = newFirstName;
+            this.user.lastName = newLastName;
+            this.user.phone = newPhone;
+            // if school changes, all talks should be deleted, and update the talks
+            if(user.school.toString() !== newSchoolId) {
+                this.user.school = new mongoose.Types.ObjectId(newSchoolId);
+                if(user.talks) { // user has talks, find all talks
+                    return Talk.find({
+                        '_id': { $in: user.talks }
+                    });
+                }
+            }
+            return null;
+        })
+        .then(talks => {
+            // create a async function to go through the talks
+            const unscheduleTalks = async (talks) => {
+                try {
+                    if(talks) {
+                        this.user.talks = [];
+                        for await (const talk of talks) {
+                            talk.scheduled = false;
+                            talk.scheduledBy = null;
+                            await talk.save();
+                        }
+                    }
+                } catch (e) {
+                    throw(e);
+                }
+            };
+            return unscheduleTalks(talks);
+        })
+        .then(result => {
+            return this.user.save();
         })
         .then(result => {
             res.status(201).json({
                 message: 'User info updated',
-                result: result
+                user: this.user
             });
         })
         .catch(err => next(err));
@@ -139,10 +170,8 @@ exports.setUser = (req, res, next) => {
 exports.getScheduledTalks = (req, res, next) => {
     const userId = req.userId;
     User.findById(userId)
-        .populate('talks.talk')
-        .execPopulate()
+        .populate('talks')
         .then(user => {
-            console.log(user);
             if(!user) {
                 const err = new Error('User not found');
                 err.statusCode = 401;
@@ -226,7 +255,10 @@ exports.removeScheduledTalk = (req, res, next) => {
         .then(talk => {
             talk.scheduled = false;
             talk.scheduledBy = null;
-            talk.save()
+            return talk.save()
+        })
+        .then(result => {
+            res.json({message: 'Talk unscheduled'});
         })
         .catch(err => next(err));
 }

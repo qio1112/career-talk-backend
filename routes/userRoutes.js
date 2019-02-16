@@ -18,8 +18,8 @@ router.post('/login', userController.login);
 router.get('/userinfo', auth, userController.getUser);
 
 // edit the information of the user
-// POST /userinfo/edit
-router.post('/userinfo/edit', auth, userController.setUser);
+// PATCH /userinfo/edit
+router.patch('/userinfo/edit', auth, userController.setUser);
 
 // get all scheduled talks of the user
 // GET /scheduledtalks
