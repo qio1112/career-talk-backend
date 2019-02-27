@@ -7,13 +7,16 @@ const mongoose = require('mongoose');
 const careerfairRoutes = require('./routes/careerfairRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const userRoutes = require('./routes/userRoutes');
+const path = require('path');
 
+// initiate app
 const app = express();
 
 // parse request bodies
 app.use(express.json());
 
-// file uploads will be added, multer
+// static path for file storage, like images
+app.use('/storage', express.static('storage')); // it's default
 
 // solve CORS errors
 app.use((req, res, next) => {

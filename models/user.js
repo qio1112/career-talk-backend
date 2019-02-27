@@ -41,6 +41,18 @@ const userSchema = new Schema({
         type: String,
         enum: ['student', 'school'],
         required: true
+    },
+    resumePath: {
+        type: String,
+    },
+    avatarPath: {
+        type: String,
+        required: true,
+        default: 'storage/avatars/default_xiaohei.png'
+    },
+    major: {
+        type: String,
+        required: true
     }
 });
 

@@ -23,15 +23,42 @@ const companySchema = new Schema({
         required: true,
         default: 'This is a new company in Career Talk.'
     },
-    // the image of the company 
-    // imageUrl: {
-    //     type: String,
-    //     required: true
-    // }
     careerfairs: [{ // all career fairs the company joined
         type: Schema.Types.ObjectId,
         ref: 'Careerfair'
-    }]
+    }],
+    // for filter
+    major: {
+        type: [String]
+    }, 
+    sponsor: {
+        type: Boolean,
+        default: true
+    },
+    fulltime: {
+        type: Boolean,
+        default: true
+    },
+    intern: {
+        type: Boolean,
+        default: true
+    },
+    freshman: {
+        type: Boolean,
+        default: true
+    },
+    juniorOrSenior: {
+        type: Boolean,
+        default: true
+    },
+    graduate: {
+        type: Boolean,
+        default: true
+    },
+    doctoral: {
+        type: Boolean,
+        default: true
+    }
 });
 
 companySchema.plugin(uniqueValidator);

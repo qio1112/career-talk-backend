@@ -4,6 +4,8 @@ const School = require('../models/school');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 const { validationResult } = require('express-validator/check');
 
 const HASH_TIMES = 10; // times of hashing the passwords
@@ -18,6 +20,7 @@ exports.signup = (req, res, next) => {
                 password: hashedPassword,
                 firstName: req.body.firstname,
                 lastName: req.body.lastname,
+                major: req.body.major,
                 phone: req.body.phone,
                 school: new mongoose.Types.ObjectId(req.body.schoolId),
                 scheduledTalks: [],
@@ -75,7 +78,7 @@ exports.login = (req, res, next) => {
         });
 };
 
-// GET /userinfo
+// GET /user
 exports.getUser = (req, res, next) => {
     const userId = req.userId;
     User.findById(userId)
@@ -93,10 +96,13 @@ exports.getUser = (req, res, next) => {
                     email: user.email,
                     firstName: user.firstName,
                     lastName: user.lastName,
+                    major: user.major,
                     phone: user.phone,
                     schoolId: user.school._id,
                     school: user.school.name,
-                    type: user.type
+                    type: user.type,
+                    resumePath: user.resumePath,
+                    avatarPath: user.avatarPath
                 }
             });
         })
@@ -105,10 +111,11 @@ exports.getUser = (req, res, next) => {
         })
 };
 
-// PATCH /userinfo/edit update user information
+// PATCH /user/edit update user information
 exports.setUser = async (req, res, next) => {
     const newFirstName = req.body.firstName;
     const newLastName = req.body.lastName;
+    const newMajor = req.body.major;
     const newPhone = req.body.phone;
     const newSchoolId = req.body.schoolId;
 
@@ -124,6 +131,7 @@ exports.setUser = async (req, res, next) => {
             }
             this.user.firstName = newFirstName;
             this.user.lastName = newLastName;
+            this.user.major = newMajor;
             this.user.phone = newPhone;
             // if school changes, all talks should be deleted, and update the talks
             if(user.school.toString() !== newSchoolId) {
@@ -170,7 +178,19 @@ exports.setUser = async (req, res, next) => {
 exports.getScheduledTalks = (req, res, next) => {
     const userId = req.userId;
     User.findById(userId)
-        .populate('talks')
+        .populate({
+            path: 'talks',
+            populate: [
+                {
+                    path: 'company',
+                    select: 'name'
+                },
+                {
+                    path: 'careerfair',
+                    select: 'name'
+                },
+            ]
+        })
         .then(user => {
             if(!user) {
                 const err = new Error('User not found');
@@ -221,11 +241,6 @@ exports.addScheduledTalk = (req, res, next) => {
             return talk.save();
         })
         .then(result => {
-            // if(!this.user.talks.find(t => t._id.toString() === this.talk._id)) {
-            //     this.user.talks.push(new mongoose.Types.ObjectId(this.talk._id));
-            //     return this.user.save();
-            // } 
-            // return ;
             this.user.talks.push(this.talk);
             return this.user.save();
         })
@@ -262,3 +277,67 @@ exports.removeScheduledTalk = (req, res, next) => {
         })
         .catch(err => next(err));
 }
+
+// POST upload resume
+exports.addResume = (req, res, next) => {
+    const resumePath = 'storage/resumes/' + req.file.filename;
+    const userId = req.userId;
+    // update user info
+    User.findById(userId)
+        .then(user => {
+            if(!user) {
+                const err = new Error('User nor found');
+                err.statusCode = 401;
+                throw err;
+            }
+            user.resumePath = resumePath;
+            return user.save();
+        })
+        .then(result => {
+            res.json({message: 'Resume saved', path: resumePath});
+        })
+        .catch(error => next(error));
+};
+
+// GET get resume from storage
+exports.downloadResume = (req, res, next) => {
+    const userId = req.userId;
+    User.findById(userId)
+        .then(user => {
+            if(!user) {
+                const err = new Error('User nor found');
+                err.statusCode = 401;
+                throw err;
+            }
+            const resumePath = user.resumePath;
+            if(!resumePath) {
+                const err = new Error('Resume not found');
+                err.statusCode = 404;
+                throw err;
+            }
+            fs.readFile(resumePath, (err, data) => {
+                if(err) return next(err);
+                res.send(data);
+            });
+        });
+};
+
+// PATCH update user avatar
+exports.uploadAvatar = (req, res, next) => {
+    const avatarPath = 'storage/avatars/' + req.file.filename;
+    const userId = req.userId;
+    User.findById(userId)
+        .then(user => {
+            if(!user) {
+                const err = new Error('User nor found');
+                err.statusCode = 401;
+                throw err;
+            }
+            user.avatarPath = avatarPath;
+            return user.save();
+        })
+        .then(result => {
+            res.json({message: 'Avatar saved', path: avatarPath});
+        })
+        .catch(error => next(error));
+};
