@@ -11,7 +11,12 @@ const { validationResult } = require('express-validator/check');
 const HASH_TIMES = 10; // times of hashing the passwords
 
 // POST /signup
-exports.signup = (req, res, next) => {
+exports.signupAsStudent = (req, res, next) => {
+    if(req.body.type !== 'student') {
+        let error = new Error('Invalid user type.');
+        error.statusCode = 422;
+        throw error;
+    }
     bcrypt.hash(req.body.password, HASH_TIMES)
         .then(hashedPassword => {
             // still need validation
@@ -24,13 +29,13 @@ exports.signup = (req, res, next) => {
                 phone: req.body.phone,
                 school: new mongoose.Types.ObjectId(req.body.schoolId),
                 scheduledTalks: [],
-                type: req.body.type
+                type: 'student'
             });
             return newUser.save();
         })
         .then(result => {
             res.status(201).json({
-                message: "User created!",
+                message: "Student account created!",
                 result: result
             });
         })
@@ -39,6 +44,42 @@ exports.signup = (req, res, next) => {
             next(err);
         });
 };
+
+// POST create user with type 'school'
+exports.signupAsSchool = (req, res, next) => {
+    if(req.body.type !== 'school') {
+        const error = new Error('Invalid user type');
+        error.statudCode = 422;
+        throw error;
+    }
+    let hashedPassword;
+    bcrypt.hash(req.body.password, HASH_TIMES)
+        .then(hashedPassword => {
+            this.hashedPassword = hashedPassword;
+            // create new school
+            const newSchool = new School({
+                name: req.body.school,
+                careerfairs: []
+            });
+            return newSchool.save();
+        })
+        .then(newSchool => {
+            const newUser = new User({
+                email: req.body.email,
+                password: this.hashedPassword,
+                school: new mongoose.Types.ObjectId(newSchool._id),
+                type: 'school'
+            });
+            return newUser.save();
+        })
+        .then(result => {
+            res.status(201).json({
+                message: 'New school user created.',
+                result: result
+            });
+        })
+        .catch(err => next(err));
+}
 
 // POST /login
 exports.login = (req, res, next) => {
@@ -69,7 +110,8 @@ exports.login = (req, res, next) => {
                 message: 'Log in succeeded',
                 token: token,
                 expiresIn: "3600", // 3600 seconds
-                userId: this.user._id.toString()
+                userId: this.user._id.toString(),
+                userType: this.user.type
             });
         })
         .catch(err => {
@@ -213,6 +255,7 @@ exports.addScheduledTalk = (req, res, next) => {
     let user;
     let talk;
     User.findById(userId)
+        .populate('talks')
         .then(user => {
             if(!user) {
                 const err = new Error('User nor found');
@@ -235,6 +278,14 @@ exports.addScheduledTalk = (req, res, next) => {
                 err.statusCode = 500;
                 throw err;
             }
+            // check if the user is available for the new talk
+            this.user.talks.forEach(userTalk => {
+                if(!(userTalk.startTime >= talk.endTime || userTalk.endTime <= talk.startTime)) {
+                    const err = new Error('Talk time violation.');
+                    err.statusCode = 422;
+                    throw err;
+                }
+            });
             this.talk = talk;
             talk.scheduled = true;
             talk.scheduledBy = new mongoose.Types.ObjectId(this.user._id);

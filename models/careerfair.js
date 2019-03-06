@@ -21,6 +21,12 @@ const careerfairSchema = new Schema({
         type: String,
         required: true
     },
+    longitude: {
+        type: Number
+    },
+    latitude: {
+        type: Number
+    },
     description: {
         type: String
     },

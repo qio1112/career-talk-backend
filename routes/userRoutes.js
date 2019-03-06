@@ -35,9 +35,13 @@ const storage = multer.diskStorage({
 })
 
 
-// new user signup
-// POST /signup
-router.post('/signup', userController.signup);
+// new student user signup 
+// POST /signup/student
+router.post('/signup/student', userController.signupAsStudent);
+
+// new school user signup
+// POST /signup.school
+router.post('/signup/school', userController.signupAsSchool);
 
 // user login
 // POST /login

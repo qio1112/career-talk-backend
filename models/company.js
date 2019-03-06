@@ -28,7 +28,7 @@ const companySchema = new Schema({
         ref: 'Careerfair'
     }],
     // for filter
-    major: {
+    majors: {
         type: [String]
     }, 
     sponsor: {

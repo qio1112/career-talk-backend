@@ -19,19 +19,20 @@ const userSchema = new Schema({
     },
     firstName: {
         type: String,
-        required: true
+        required: () => this.type === 'student'
     },
     lastName: {
         type: String,
-        required: true
+        required: () => this.type === 'student'
     },
     phone: {
         type: String,
-        required: true
+        required: () => this.type === 'student'
     },
     school: { // school of the user
         type: Schema.Types.ObjectId,
-        ref: 'School'
+        ref: 'School',
+        required: () => this.type === 'student'
     },
     talks: [{ // talks the user has scheduled
         type: Schema.Types.ObjectId,
@@ -52,7 +53,7 @@ const userSchema = new Schema({
     },
     major: {
         type: String,
-        required: true
+        required: () => this.type === 'student'
     }
 });
 

@@ -7,7 +7,6 @@ const { validationResult } = require('express-validator/check');
 // GET /careerfairs/:careerfairId/companies
 exports.getCompanies = (req, res, next) => {
     const careerfairId = req.params.careerfairId;
-    console.log(req.query);
     Careerfair.findById(careerfairId)
         .populate('companies')
         .then(careerfair => {
@@ -32,12 +31,12 @@ exports.getCompanies = (req, res, next) => {
                 if (result && req.query.major) {
                    if (Array.isArray(req.query.major)) { // more than 1 majors
                         req.query.major.forEach(major => {
-                            result = result && company.major.findIndex(m => {
+                            result = result && company.majors.findIndex(m => {
                                 return m.toLowerCase().trim() === major;
                             }) >= 0;
                         });
                    } else {
-                       result = result && company.major.findIndex(major => {
+                       result = result && company.majors.findIndex(major => {
                            return req.query.major == major.toLowerCase().trim();
                        }) >= 0;
                    }
@@ -78,12 +77,6 @@ exports.getCompanyById = (req, res, next) => {
             });
         });
 };
-
-// get componies which satisfies the filter options
-// GET /careerfairs/:careerfairId/companies/:companyId
-exports.getCompaniesByFilter = (req, res, next) => {
-
-}
 
 // get all talks of a company in a certain careerfair
 // GET /careerfairs/:careerfairId/companies/:companyId/talks
