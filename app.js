@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const careerfairRoutes = require('./routes/careerfairRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const userRoutes = require('./routes/userRoutes');
+const apiKeys = require('./apiKeys');
 const path = require('path');
 
 // initiate app
@@ -42,7 +43,7 @@ app.use((error, req, res, next) => {
 });
 
 // connect to database
-mongoose.connect('mongodb+srv://Yipeng:Universal231!@careertalk-s5pxe.mongodb.net/test?retryWrites=true')
+mongoose.connect(apiKeys.mongoDBApiKey)
     .then(result => {
         const server = app.listen(3000);
         console.log('Database connected!');

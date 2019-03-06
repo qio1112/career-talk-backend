@@ -2,11 +2,12 @@ const Careerfair = require('../models/careerfair');
 const School = require('../models/school');
 const User = require('../models/user');
 const googleMaps = require('@google/maps');
+const apiKeys = require('../apiKeys');
 const { validationResult } = require('express-validator/check');
 
 // set google maps api to get location of career fairs
 const googleMapsClient = googleMaps.createClient({
-    key: 'AIzaSyCp_wy-tKCFcQ2Oy-qyoL5NU-woiJdQzsw',
+    key: apiKeys.googleMapsApiKey,
     Promise: Promise
 });
 
