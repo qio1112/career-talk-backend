@@ -20,7 +20,6 @@ const companySchema = new Schema({
     },
     description: { 
         type: String,
-        required: true,
         default: 'This is a new company in Career Talk.'
     },
     careerfairs: [{ // all career fairs the company joined
