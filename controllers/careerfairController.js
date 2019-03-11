@@ -48,7 +48,6 @@ exports.getCareerfairs = (req, res, next) => {
                             await careerfair.save();
                         }
                     }
-                    console.log(careerfairs);
                     this.careerfairs = careerfairs;
                 } catch(e) {
                     throw(e);
@@ -57,7 +56,6 @@ exports.getCareerfairs = (req, res, next) => {
             return setCoordinates(careerfairs);
         })
         .then(result => {
-            console.log(this.careerfairs);
             res.status(200).json({
                 message: 'All career fairs fetched',
                 careerfairs: this.careerfairs
@@ -68,7 +66,7 @@ exports.getCareerfairs = (req, res, next) => {
         });
 };
 
-// GET majors in the career fair by checking all aompanies 
+// GET majors in the career fair by checking all companies 
 exports.getMajorsInCareerfair = (req, res, next) => {
     const careerfairId = req.params.careerfairId;
     Careerfair.findById(careerfairId) 

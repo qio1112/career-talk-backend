@@ -17,6 +17,12 @@ exports.signupAsStudent = (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(422).json({
+            errors: errors.array()
+        })
+    }
     bcrypt.hash(req.body.password, HASH_TIMES)
         .then(hashedPassword => {
             // still need validation
@@ -51,6 +57,12 @@ exports.signupAsSchool = (req, res, next) => {
         const error = new Error('Invalid user type');
         error.statudCode = 422;
         throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(422).json({
+            errors: errors.array()
+        })
     }
     let hashedPassword;
     bcrypt.hash(req.body.password, HASH_TIMES)

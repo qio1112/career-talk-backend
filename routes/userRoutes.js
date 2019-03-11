@@ -5,6 +5,7 @@ const schoolController = require('../controllers/schoolController')
 const userController = require('../controllers/userController');
 const auth = require('../auth/is-auth');
 const multer = require('multer');
+const { check } = require('express-validator/check');
 
 // set multer for file upload
 const MIME_TYPE_MAP = {
@@ -13,7 +14,7 @@ const MIME_TYPE_MAP = {
     'image/jpeg': 'jpg',
     'image/jpg': 'jpg'
 };
-// set storage for resume
+// set storage for resumes and avatars
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const isValid = MIME_TYPE_MAP[file.mimetype];
@@ -34,14 +35,37 @@ const storage = multer.diskStorage({
     }
 })
 
-
 // new student user signup 
 // POST /signup/student
-router.post('/signup/student', userController.signupAsStudent);
+router.post('/signup/student',
+    check('email')
+        .isEmail().withMessage('Invalid email.')
+        .isEmpty().withMessage('Empty email.'),
+    check('password')
+        .isEmpty().withMessage('Empty password')
+        .isLength({min: 6}).withMessage('Too short password.'),
+    check('firstname')
+        .isEmpty().withMessage('First name is empty.'),
+    check('lastname')
+        .isEmpty().withMessage('Last name is empty.'),
+    check('major')
+        .isEmpty().withMessage('Major is empty.'),
+    check('phone')
+        .isEmpty().withMessage('Phone is empty.'),
+    userController.signupAsStudent);
 
 // new school user signup
 // POST /signup.school
-router.post('/signup/school', userController.signupAsSchool);
+router.post('/signup/school',
+    check('email')
+        .isEmail().withMessage('Invalid email.')
+        .isEmpty().withMessage('Empty email.'),
+    check('password')
+        .isEmpty().withMessage('Empty password')
+        .isLength({min: 6}).withMessage('Too short password.'),
+    check('school')
+        .isEmpty().withMessage('Empty school name.'),
+    userController.signupAsSchool);
 
 // user login
 // POST /login
