@@ -12,4 +12,13 @@ router.get('/careerfairs/:careerfairId/companies/:companyId', auth, companyContr
 // GET talks of a certain company in a certain career fair
 router.get('/careerfairs/:careerfairId/companies/:companyId/talks', auth, companyController.getTalks);
 
+//GET get all existing companies
+router.get('/companies', companyController.getAllCompanies);
+
+// POST create new companies and related talks to certain career fair
+router.post('/newcompanies', companyController.createNewCompaniesWithTalks);
+
+// POST create new talks with school IDs and put into related careerfairs
+router.post('/existingcompanies', companyController.addTalksWithExistingCompanies);
+
 module.exports = router;

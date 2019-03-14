@@ -3,6 +3,7 @@ const School = require('../models/school');
 const User = require('../models/user');
 const googleMaps = require('@google/maps');
 const apiKeys = require('../apiKeys');
+const mongoose = require('mongoose');
 const { validationResult } = require('express-validator/check');
 
 // set google maps api to get location of career fairs
@@ -16,7 +17,7 @@ const googleMapsClient = googleMaps.createClient({
 exports.getCareerfairs = (req, res, next) => {
     const userId = req.userId;
     let schoolId;
-    let careerfairs;
+    let careerfairsFound;
     User.findById(userId)
         .then(user => {
             if(!user) {
@@ -24,8 +25,8 @@ exports.getCareerfairs = (req, res, next) => {
                 err.statusCode = 401;
                 throw err;
             }
-            this.schoolId = user.school;
-            return School.findById(this.schoolId).populate('careerfairs');
+            schoolId = user.school;
+            return School.findById(schoolId).populate('careerfairs');
         })
         .then(school => {
             if(!school) {
@@ -42,13 +43,18 @@ exports.getCareerfairs = (req, res, next) => {
                         if(!careerfair.latitude || !careerfair.longitude) {
                             await googleMapsClient.geocode({address: careerfair.address}).asPromise()
                             .then(response => {
-                                careerfair.latitude = response.json.results[0].geometry.location.lat;
-                                careerfair.longitude = response.json.results[0].geometry.location.lng;
+                                if(response.json.results.length !== 0) {
+                                    careerfair.latitude = response.json.results[0].geometry.location.lat;
+                                    careerfair.longitude = response.json.results[0].geometry.location.lng;
+                                } else {
+                                    careerfair.latitude = null;
+                                    careerfair.longitude = null;
+                                }
                             });
                             await careerfair.save();
                         }
                     }
-                    this.careerfairs = careerfairs;
+                    careerfairsFound = careerfairs;
                 } catch(e) {
                     throw(e);
                 }
@@ -58,7 +64,7 @@ exports.getCareerfairs = (req, res, next) => {
         .then(result => {
             res.status(200).json({
                 message: 'All career fairs fetched',
-                careerfairs: this.careerfairs
+                careerfairs: careerfairsFound
             });
         })
         .catch(err => {
@@ -112,3 +118,46 @@ exports.getCareerfairById = (req, res, next) => {
             next(err);
         });
 };
+
+// create a new career fair
+// POST /careerfair
+exports.createCareerfair = (req, res, next) => {
+    // need validation
+    const userId = req.userId;
+    const name = req.body.name;
+    // const date = new Date(req.body.date);
+    const address = req.body.location;
+    const description = req.body.description;
+    const startTime = new Date(req.body.startTime);
+    const endTime = new Date(req.body.endTime);
+    let schoolId;
+    let newCareerfair;
+    User.findById(userId)
+        .then(user => {
+            const schoolId = user.school;
+            this.schoolId = schoolId;
+            return Careerfair.create({
+                name: name,
+                school: new mongoose.Types.ObjectId(schoolId),
+                startTime: startTime,
+                endTime: endTime,
+                address: address,
+                description: description
+            });
+        })
+        .then(newCareerfair => {
+            this.newCareerfair = newCareerfair;
+            return School.findById(this.schoolId)
+        })
+        .then(school => {
+            school.careerfairs.push(new mongoose.Types.ObjectId(this.newCareerfair._id));
+            return school.save();
+        })
+        .then(result => {
+            res.status(201).json({
+                careerfair: this.newCareerfair,
+                message: 'New career fair created.'
+            });
+        })
+        .catch(e => next(e));
+}
