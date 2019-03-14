@@ -44,7 +44,6 @@ exports.getCompanies = (req, res, next) => {
                 }
                 return result;
             });
-            // console.log(companies);
             res.status(200).json({
                 message: 'Companies found.',
                 companies: companies.sort(company => company.name[0]),
@@ -64,7 +63,6 @@ exports.getCompanies = (req, res, next) => {
 exports.getCompanyById = (req, res, next) => {
     const companyId = req.params.companyId;
     const sponsor = req.query.sponsor;
-    console.log("sponsor" + sponsor);
     Company.findById(companyId)
         .then(company => {
             if(!company) {
@@ -194,7 +192,6 @@ exports.addTalksWithExistingCompanies = (req, res, next) => {
     const companiesWithTalks = req.body.companies;
     const talksToAdd = [];
     let newTalks;
-    console.log(companiesWithTalks);
     companiesWithTalks.forEach(c => {
         c.talks.forEach(talk => {
             talk.company = new mongoose.Types.ObjectId(c._id);
@@ -202,13 +199,10 @@ exports.addTalksWithExistingCompanies = (req, res, next) => {
             talk.startTime = new Date(talk.startTime);
             talk.endTime = new Date(talk.endTime);
         });
-        console.log(c);
         talksToAdd.push(...c.talks);
     });
-    console.log(talksToAdd);
     Talk.insertMany(talksToAdd)
         .then(talks => {
-            console.log(talks);
             newTalks = talks;
             return Careerfair.findById(careerfairId);
         })
